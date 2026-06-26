@@ -1,1 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pixel Portal — Your Gateway to Digital Exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@600;800;1000;1200&display=swap" rel="stylesheet"><style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  :root {
+    --black: #ffffff;
+    --cyan: #3CB470;
+    --pink: #3CB470;
+    --white: #3CB470;
+    --gray: #8899aa;
+    --surface: #060b14;
+    --surface2: #0a1020;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  /* ── OVERLAY ── */
+  #immersive-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 1s ease;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 1rem;
+  }
+  #immersive-overlay.active { opacity: 1; pointer-events: all; }
+  #immersive-overlay .portal-text {
+    font-family: 'bebas neue', sans-serif;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    color: var(--cyan);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    animation: pulse-text 2s ease-in-out infinite;
+  }
+  #immersive-overlay .portal-ring {
+    width: 120px; height: 120px;
+    border: 2px solid var(--cyan);
+    border-radius: 50%;
+    animation: spin-ring 3s linear infinite;
+    position: relative;
+  }
+  #immersive-overlay .portal-ring::after {
+    content: '';
+    position: absolute; inset: 8px;
+    border: 1px solid var(--pink);
+    border-radius: 50%;
+    animation: spin-ring 2s linear infinite reverse;
+  }
+  @keyframes spin-ring { to { transform: rotate(360deg); } }
+  @keyframes pulse-text { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 5%;
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    background: rgba(1,2,5,0.6);
+    border-bottom: 1px solid rgba(0,255,255,0.08);
+    transition: background 0.3s;
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem; font-weight: 900;
+    color: var(--cyan);
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--pink); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    color: rgba(240,244,255,0.65);
+    text-decoration: none;
+    font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase;
+    font-weight: 500;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px;
+    background: var(--cyan); transition: width 0.3s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+  .nav-links a:hover::after { width: 100%; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 120px 5% 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  #hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 70% at 80% 50%, rgba(0,255,255,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 50% at 20% 80%, rgba(255,0,85,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-left { position: relative; z-index: 2; }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--cyan); font-weight: 600; margin-bottom: 1.5rem;
+    opacity: 0; transform: translateY(20px);
+    animation: reveal-up 0.8s cubic-bezier(.2,.8,.4,1) 0.2s forwards;
+  }
+  .hero-eyebrow::before {
+    content: ''; width: 24px; height: 1px; background: var(--cyan);
+  }
+  .hero-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 900; line-height: 1.05;
+    letter-spacing: -0.02em;
+    overflow: hidden;
+  }
+  .hero-heading .line {
+    display: block; overflow: hidden;
+  }
+  .hero-heading .line span {
+    display: block;
+    opacity: 0; transform: translateY(105%);
+    animation: reveal-mask 0.9s cubic-bezier(.2,.8,.4,1) forwards;
+  }
+  .hero-heading .line:nth-child(1) span { animation-delay: 0.35s; }
+  .hero-heading .line:nth-child(2) span { animation-delay: 0.5s; }
+  .hero-heading .line:nth-child(3) span { animation-delay: 0.65s; color: var(--cyan); }
+  .hero-heading .line:nth-child(4) span { animation-delay: 0.8s; color: var(--pink); }
+  @keyframes reveal-mask {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes reveal-up {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .hero-sub {
+    margin-top: 1.75rem; max-width: 440px;
+    color: rgba(240,244,255,0.5); font-size: 1rem; line-height: 1.75;
+    opacity: 0; transform: translateY(16px);
+    animation: reveal-up 0.8s ease 1s forwards;
+  }
+  .hero-cta-wrap {
+    position: absolute;
+  bottom: -80px;
+  right: -85%;
+
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+
+  opacity: 0;
+  transform: translateY(16px);
+  animation: reveal-up 0.8s ease 1.2s forwards;
+  }
+  .btn-portal {
+    position: relative; display: inline-flex; align-items: center; gap: 0.6rem;
+    padding: 0.9rem 2rem;
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer;
+    overflow: hidden;
+    transition: color 0.3s;
+      box-shadow:
+    0 0 10px rgba(60,180,112,0.4),
+    0 0 20px rgba(21, 0, 248, 0.3),
+    0 0 40px rgba(33, 0, 249, 0.15);
+
+  animation: portal-glow 3s ease-in-out infinite;
+  }
+  .btn-portal::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--cyan); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s cubic-bezier(.7,0,.3,1);
+  }
+  .btn-portal:hover::before { transform: scaleX(1); }
+  .btn-portal:hover { color: var(--black); }
+  .btn-portal:hover { box-shadow: 0 0 32px rgba(0,255,255,0.35), 0 0 64px rgba(0,255,255,0.12); }
+  .btn-portal span { position: relative; z-index: 1; }
+  .btn-secondary {
+    background: none; border: none; cursor: pointer;
+    color: rgba(240,244,255,0.45); font-size: 0.85rem;
+    text-decoration: underline; text-underline-offset: 4px;
+    transition: color 0.2s;
+  }
+  .btn-secondary:hover { color: var(--white); }
+
+  /* ── HERO RIGHT: PORTAL VISUAL ── */
+  .hero-right {
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 2;
+    opacity: 0; animation: reveal-up 1s ease 0.9s forwards;
+  }
+  .portal-visual {
+    width: clamp(260px, 36vw, 480px);
+    aspect-ratio: 1;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .portal-visual .ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid;
+    animation: orbit linear infinite;
+  }
+  .portal-visual .ring:nth-child(1) {
+    inset: 0; border-color: rgba(0,255,255,0.25);
+    animation-duration: 12s;
+  }
+  .portal-visual .ring:nth-child(2) {
+    inset: 8%; border-color: rgba(255,0,85,0.2);
+    animation-duration: 9s; animation-direction: reverse;
+  }
+  .portal-visual .ring:nth-child(3) {
+    inset: 18%; border-color: rgba(0,255,255,0.15);
+    animation-duration: 7s;
+  }
+  .portal-visual .ring:nth-child(4) {
+    inset: 30%; border-color: rgba(255,0,85,0.3);
+    animation-duration: 5s; animation-direction: reverse;
+  }
+  .portal-visual .core {
+    width: 36%; aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,255,255,0.6) 0%, rgba(0,255,255,0.1) 50%, transparent 70%);
+    animation: core-pulse 4s ease-in-out infinite;
+    position: relative; z-index: 2;
+  }
+  .portal-visual .dot {
+    position: absolute; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--cyan);
+  }
+  .portal-visual .dot.pink { background: var(--pink); }
+  @keyframes orbit { to { transform: rotate(360deg); } }
+  @keyframes core-pulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.7; }
+  }
+
+  /* ── NOISE GRID OVERLAY ── */
+  .grid-overlay {
+    position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background-image:
+      linear-gradient(rgba(0,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* ── SECTION SHARED ── */
+  section { padding: 100px 5%; position: relative; }
+  .section-label {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--cyan); font-weight: 600; margin-bottom: 1.25rem;
+  }
+  .section-label::before { content: '//'; opacity: 0.5; }
+  .section-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+    font-weight: 700; line-height: 1.1; letter-spacing: -0.02em;
+    max-width: 640px;
+  }
+
+  /* ── MARQUEE ── */
+  #marquee-section {
+    padding: 40px 0; overflow: hidden;
+    border-top: 1px solid rgba(0,255,255,0.06);
+    border-bottom: 1px solid rgba(0,255,255,0.06);
+    background: var(--surface);
+  }
+  .marquee-track {
+    display: flex; gap: 0; width: max-content;
+    animation: marquee 28s linear infinite;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  .marquee-item {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0 3.5rem;
+    font-family: 'bebas neue', sans-serif;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2em;
+    color: rgba(240,244,255,0.2); white-space: nowrap;
+    text-transform: uppercase;
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+  .marquee-item .dot-sep { color: var(--cyan); }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  /* ── SERVICES ── */
+  #services { background: var(--surface); }
+  .services-grid {
+    margin-top: 3.5rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: rgba(0,255,255,0.06);
+    border: 1px solid rgba(0,255,255,0.06);
+  }
+  .service-card {
+    background: var(--surface);
+    padding: 2.5rem 2rem;
+    position: relative; overflow: hidden;
+    transition: background 0.3s, transform 0.3s;
+    cursor: default;
+  }
+  .service-card::before {
+    content: ''; position: absolute;
+    inset: 0; border: 1px solid transparent;
+    transition: border-color 0.3s;
+    pointer-events: none;
+  }
+  .service-card:hover { background: var(--surface2); transform: translateY(-4px); }
+  .service-card:hover::before { border-color: rgba(0,255,255,0.25); }
+  .service-card:hover .service-glow { opacity: 1; }
+  .service-glow {
+    position: absolute; top: -60px; right: -60px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,255,255,0.08) 0%, transparent 70%);
+    opacity: 0; transition: opacity 0.4s; pointer-events: none;
+  }
+  .service-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.65rem; color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 1rem;
+  }
+  .service-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem;
+    color: var(--white);
+  }
+  .service-desc { font-size: 0.88rem; color: rgba(240,244,255,0.45); line-height: 1.7; }
+  .service-arrow {
+    position: absolute; bottom: 1.5rem; right: 1.5rem;
+    font-size: 1.2rem; color: rgba(0,255,255,0.2);
+    transition: color 0.3s, transform 0.3s;
+  }
+  .service-card:hover .service-arrow { color: var(--cyan); transform: translate(4px,-4px); }
+
+  /* ── CASE STUDIES ── */
+  #work { background: var(--black); }
+  .work-grid { margin-top: 3.5rem; display: flex; flex-direction: column; gap: 2px; }
+  .case-item {
+    position: relative; overflow: hidden;
+    height: clamp(240px, 28vw, 380px);
+    display: flex; align-items: flex-end;
+    padding: 2.5rem 3rem;
+    cursor: pointer;
+    background: var(--surface2);
+  }
+  .case-img-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    transition: transform 0.8s cubic-bezier(.2,.8,.4,1);
+    transform: scale(1.05);
+    opacity: 0.35;
+    will-change: transform;
+  }
+  .case-item:hover .case-img-bg { transform: scale(1); opacity: 0.5; }
+  .case-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(1,2,5,0.95) 0%, rgba(1,2,5,0.2) 60%, transparent 100%);
+  }
+  .case-content { position: relative; z-index: 2; }
+  .case-tag {
+    display: inline-block; margin-bottom: 0.5rem;
+    font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--cyan); font-weight: 600;
+  }
+  .case-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.1rem, 2.5vw, 1.8rem);
+    font-weight: 700; color: var(--white); line-height: 1.15;
+  }
+  .case-link {
+    display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem;
+    font-size: 0.78rem; color: rgba(240,244,255,0.4); text-decoration: none;
+    transition: color 0.2s; letter-spacing: 0.05em;
+  }
+  .case-item:hover .case-link { color: var(--cyan); }
+
+  /* ── ABOUT / STATS ── */
+  #about {
+    background: var(--surface);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+  }
+  .about-text .section-heading { max-width: 480px; }
+  .about-text p {
+    margin-top: 1.5rem; color: rgba(240,244,255,0.45);
+    font-size: 0.95rem; line-height: 1.85; max-width: 440px;
+  }
+  .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: rgba(0,255,255,0.08);
+    border: 1px solid rgba(0,255,255,0.08);
+  }
+  .stat-box {
+    padding: 2rem 1.75rem; background: var(--surface);
+  }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900; color: var(--cyan);
+    line-height: 1;
+  }
+  .stat-num .unit { font-size: 0.6em; color: var(--pink); }
+  .stat-label {
+    margin-top: 0.5rem; font-size: 0.78rem;
+    color: rgba(240,244,255,0.35); letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── CONTACT ── */
+  #contact { background: var(--black); }
+  .contact-grid {
+    margin-top: 3.5rem;
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 6rem; align-items: start;
+  }
+  .contact-info p {
+    color: rgba(240,244,255,0.4); font-size: 0.92rem; line-height: 1.8; margin-top: 1rem;
+    max-width: 340px;
+  }
+  .contact-detail {
+    margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem;
+  }
+  .contact-detail-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-size: 0.85rem; color: rgba(240,244,255,0.5);
+  }
+  .contact-detail-item strong { color: var(--cyan); }
+  .form-field { margin-bottom: 1.25rem; }
+  .form-field label {
+    display: block; font-size: 0.72rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: rgba(240,244,255,0.35);
+    margin-bottom: 0.5rem; font-weight: 600;
+  }
+  .form-field input,
+  .form-field textarea,
+  .form-field select {
+    width: 100%; background: var(--surface2);
+    border: 1px solid rgba(0,255,255,0.1);
+    color: var(--white); font-family: 'Inter', sans-serif; font-size: 0.9rem;
+    padding: 0.85rem 1rem; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    border-radius: 0; appearance: none;
+  }
+  .form-field input:focus,
+  .form-field textarea:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0,255,255,0.08);
+  }
+  .form-field textarea { resize: vertical; min-height: 120px; }
+  .btn-submit {
+    width: 100%; padding: 1rem;
+    background: var(--cyan); border: none; color: var(--black);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    margin-top: 0.5rem;
+  }
+  .btn-submit:hover {
+    background: #00dddd;
+    box-shadow: 0 0 32px rgba(0,255,255,0.3);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid rgba(0,255,255,0.07);
+    padding: 3rem 5%;
+    background: var(--surface);
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2rem;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1rem; font-weight: 900;
+    color: var(--cyan); letter-spacing: 0.1em; text-decoration: none;
+  }
+  .footer-logo span { color: var(--pink); }
+  .footer-copy { font-size: 0.78rem; color: rgba(240,244,255,0.2); margin-top: 0.5rem; }
+  .footer-links { display: flex; gap: 2rem; list-style: none; }
+  .footer-links a {
+    font-size: 0.78rem; color: rgba(240,244,255,0.3); text-decoration: none;
+    letter-spacing: 0.05em; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--cyan); }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-d1 { transition-delay: 0.1s; }
+  .reveal-d2 { transition-delay: 0.2s; }
+  .reveal-d3 { transition-delay: 0.3s; }
+  .reveal-d4 { transition-delay: 0.4s; }
+
+  /* ── CURSOR GLOW ── */
+  .cursor-glow {
+    position: fixed; width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,255,255,0.04) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+    transform: translate(-50%, -50%);
+    transition: left 0.1s, top 0.1s;
+  }
+
+  /* ── SCANLINES ── */
+  body::after {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 4px);
+  }
+
+  @media (max-width: 900px) {
+    #hero { grid-template-columns: 1fr; text-align: left; }
+    .hero-right { display: none; }
+    #about { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; gap: 3rem; }
+    footer { grid-template-columns: 1fr; }
+    .footer-links { flex-wrap: wrap; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cursor glow -->
+<div class="cursor-glow" id="cursor-glow"></div>
+
+<!-- Overlay for portal transition -->
+<div id="immersive-overlay">
+  <div class="portal-ring"></div>
+  <div class="portal-text">Entering the Multiverse&hellip;</div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Pixel<span>.</span>Portal</a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#work">Work</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="grid-overlay"></div>
+  <div class="hero-left">
+    <div class="hero-eyebrow">Digital Agency &mdash; Est. 2024</div>
+    <h1 class="hero-heading">
+      <span class="line"><span>Pixel Portal:</span></span>
+      <span class="line"><span>Your Gateway</span></span>
+      <span class="line"><span>to Digital</span></span>
+      <span class="line"><span>Exploration.</span></span>
+    </h1>
+    <p class="hero-sub">We craft premium digital experiences that blur the line between technology and art. From brand identity to immersive WebGL universes — we build what others can't imagine.</p>
+    <div class="hero-cta-wrap">
+      <button class="btn-portal" id="portal-btn" aria-label="Launch the immersive portal experience">
+        <span>⬡</span>
+        <span>Enter the Portal</span>
+      </button>
+      <button class="btn-secondary" onclick="document.getElementById('work').scrollIntoView({behavior:'smooth'})">View our work</button>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="portal-visual" aria-hidden="false">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="core"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CLIENT MARQUEE -->
+<div id="marquee-section" aria-label="Our clients">
+  <div class="marquee-track">
+    <!-- first set -->
+    <div class="marquee-item">soaham <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">is <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Very <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">hello<span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Phantom Works <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Nova Systems <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Echo Digital <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Pulse Media <span class="dot-sep">✦</span></div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item">soaham <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">is <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Very <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">hello<span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Phantom Works <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Nova Systems <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Echo Digital <span class="dot-sep">✦</span></div>
+    <div class="marquee-item">Pulse Media <span class="dot-sep">✦</span></div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="reveal"><div class="section-label">What We Do</div></div>
+  <h2 class="section-heading reveal reveal-d1">Capabilities built for the next frontier.</h2>
+  <div class="services-grid">
+    <div class="service-card reveal reveal-d1">
+      <div class="service-glow"></div>
+      <div class="service-num">01</div>
+      <div class="service-title">Brand Identity</div>
+      <p class="service-desc">Visual systems that hold authority at any scale — from favicon to billboard. Strategy-first, aesthetics second.</p>
+      <div class="service-arrow">↗</div>
+    </div>
+    <div class="service-card reveal reveal-d2">
+      <div class="service-glow"></div>
+      <div class="service-num">02</div>
+      <div class="service-title">Web Development</div>
+      <p class="service-desc">Performance-obsessed, animation-rich web builds. Next.js, WebGL, and custom shaders crafted for real impact.</p>
+      <div class="service-arrow">↗</div>
+    </div>
+    <div class="service-card reveal reveal-d3">
+      <div class="service-glow"></div>
+      <div class="service-num">03</div>
+      <div class="service-title">SEO & Growth</div>
+      <p class="service-desc">Data-backed acquisition strategies. We audit, optimize, and scale — sustainably, without shortcuts.</p>
+      <div class="service-arrow">↗</div>
+    </div>
+    <div class="service-card reveal reveal-d4">
+      <div class="service-glow"></div>
+      <div class="service-num">04</div>
+      <div class="service-title">3D &amp; WebGL</div>
+      <p class="service-desc">Immersive real-time experiences powered by Three.js and custom GLSL. Where creative technology meets the browser.</p>
+      <div class="service-arrow">↗</div>
+    </div>
+    <div class="service-card reveal reveal-d1">
+      <div class="service-glow"></div>
+      <div class="service-num">05</div>
+      <div class="service-title">UX Strategy</div>
+      <p class="service-desc">Research-led UX that converts. Wireframes, prototypes, and usability testing designed to eliminate friction.</p>
+      <div class="service-arrow">↗</div>
+    </div>
+    <div class="service-card reveal reveal-d2">
+      <div class="service-glow"></div>
+      <div class="service-num">06</div>
+      <div class="service-title">Motion Design</div>
+      <p class="service-desc">From micro-interactions to full cinematic sequences. Motion that gives interfaces a heartbeat.</p>
+      <div class="service-arrow">↗</div>
+    </div>
+  </div>
+</section>
+
+<!-- CASE STUDIES -->
+<section id="work">
+  <div class="reveal"><div class="section-label">Selected Work</div></div>
+  <h2 class="section-heading reveal reveal-d1">Projects that changed the game.</h2>
+  <div class="work-grid" style="margin-top:3.5rem;">
+    <div class="case-item reveal">
+      <div class="case-img-bg" style="background-image: linear-gradient(135deg, #0a1a2e 0%, #051020 100%); background-color: #051020;"></div>
+      <div class="case-overlay"></div>
+      <div class="case-content">
+        <div class="case-tag">Brand Identity / Web</div>
+        <div class="case-title">Nexus Corp — Redefining Enterprise SaaS</div>
+        <a href="#" class="case-link">View case study →</a>
+      </div>
+    </div>
+    <div class="case-item reveal reveal-d1">
+      <div class="case-img-bg" style="background-image: linear-gradient(135deg, #1a0a1e 0%, #0e0514 100%); background-color: #0e0514;"></div>
+      <div class="case-overlay"></div>
+      <div class="case-content">
+        <div class="case-tag">WebGL / 3D Experience</div>
+        <div class="case-title">Stellar Labs — An Immersive Product Launch</div>
+        <a href="#" class="case-link">View case study →</a>
+      </div>
+    </div>
+    <div class="case-item reveal reveal-d2">
+      <div class="case-img-bg" style="background-image: linear-gradient(135deg, #0a1a10 0%, #051008 100%); background-color: #051008;"></div>
+      <div class="case-overlay"></div>
+      <div class="case-content">
+        <div class="case-tag">SEO / Growth</div>
+        <div class="case-title">Vortex AI — 4× Organic Traffic in 90 Days</div>
+        <a href="#" class="case-link">View case study →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / STATS -->
+<section id="about">
+  <div class="about-text">
+    <div class="reveal"><div class="section-label">Who We Are</div></div>
+    <h2 class="section-heading reveal reveal-d1">A small team. An outsized impact.</h2>
+    <p class="reveal reveal-d2">Pixel Portal is a boutique creative technology studio operating at the intersection of design and engineering. We obsess over the details that others cut — the easing curve, the shader pass, the typographic rhythm that makes something feel expensive.</p>
+    <p class="reveal reveal-d3">We take on a limited number of projects each quarter so that every client receives the full weight of our attention.</p>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-box reveal">
+      <div class="stat-num">140<span class="unit">+</span></div>
+      <div class="stat-label">Projects shipped</div>
+    </div>
+    <div class="stat-box reveal reveal-d1">
+      <div class="stat-num">98<span class="unit">%</span></div>
+      <div class="stat-label">Client retention</div>
+    </div>
+    <div class="stat-box reveal reveal-d2">
+      <div class="stat-num">4<span class="unit">×</span></div>
+      <div class="stat-label">Avg traffic lift</div>
+    </div>
+    <div class="stat-box reveal reveal-d3">
+      <div class="stat-num">12</div>
+      <div class="stat-label">Industry awards</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="reveal"><div class="section-label">Get In Touch</div></div>
+  <h2 class="section-heading reveal reveal-d1">Let's build something extraordinary.</h2>
+  <div class="contact-grid">
+    <div class="contact-info reveal">
+      <p>We work with a select few clients who are serious about standing out. If that's you, we'd love to hear about your project.</p>
+      <div class="contact-detail">
+        <div class="contact-detail-item"><strong>Email</strong> hello@pixelportal.io</div>
+        <div class="contact-detail-item"><strong>Studio</strong> New Delhi, India</div>
+        <div class="contact-detail-item"><strong>Response</strong> Within 24 hours</div>
+      </div>
+    </div>
+    <div class="reveal reveal-d1">
+      <div class="form-field">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" placeholder="Alex Chen" />
+      </div>
+      <div class="form-field">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="alex@company.com" />
+      </div>
+      <div class="form-field">
+        <label for="budget">Project Budget</label>
+        <select id="budget">
+          <option value="">Select a range</option>
+          <option>$10k – $25k</option>
+          <option>$25k – $75k</option>
+          <option>$75k – $200k</option>
+          <option>$200k+</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="message">Tell us about your project</label>
+        <textarea id="message" placeholder="What are you building, and why does it matter?"></textarea>
+      </div>
+      <button class="btn-submit" type="button">Send Transmission</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <a href="#" class="footer-logo">Pixel<span>.</span>Portal</a>
+    <p class="footer-copy">&copy; 2025 Pixel Portal Studio. All rights reserved.</p>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Twitter / X</a></li>
+    <li><a href="#">LinkedIn</a></li>
+    <li><a href="#">Instagram</a></li>
+  </ul>
+</footer>
+
+<script>
+  // ── Cursor Glow
+  const glow = document.getElementById('cursor-glow');
+  document.addEventListener('mousemove', e => {
+    glow.style.left = e.clientX + 'px';
+    glow.style.top = e.clientY + 'px';
+  });
+
+  // ── Portal Trigger (isImmersiveMode toggle)
+  let isImmersiveMode = false;
+  const overlay = document.getElementById('immersive-overlay');
+  const portalBtn = document.getElementById('portal-btn');
+
+  portalBtn.addEventListener('click', () => {
+    if (isImmersiveMode) return;
+    isImmersiveMode = true;
+    overlay.classList.add('active');
+    // Soham's 3D world would mount here after 1.2s
+    setTimeout(() => {
+      alert('🌀 Portal activated!\n\nIn the full build, Soham\'s WebGL Multiverse would now take over — physics simulations, GLSL shaders, and immersive 3D space.\n\nThis SOW preview demonstrates the Surface (Atharv\'s DOM) and the trigger handoff point.');
+      overlay.classList.remove('active');
+      isImmersiveMode = false;
+    }, 1800);
+  });
+
+  // ── Scroll Reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // ── Nav scroll tint
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    nav.style.background = window.scrollY > 60
+      ? 'rgba(1,2,5,0.92)'
+      : 'rgba(1,2,5,0.6)';
+  }, { passive: true });
+
+  // ── Parallax on case study items
+  const caseItems = document.querySelectorAll('.case-img-bg');
+  window.addEventListener('scroll', () => {
+    caseItems.forEach(bg => {
+      const rect = bg.parentElement.getBoundingClientRect();
+      const offset = (rect.top / window.innerHeight) * 20;
+      bg.style.transform = `scale(1.05) translateY(${offset}px)`;
+    });
+  }, { passive: true });
+</script>
+</body>
+</html>
